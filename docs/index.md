@@ -62,12 +62,25 @@ fidder predict \
 --probability-threshold 0.5 \
 --output-mask mask.mrc
 
+# predict fiducial masks for all MRC files in a folder
+# ideal for batch-processing all images of a TS in a single call
+fidder predict_batch \
+--input-images-folder /path/to/input/image_files \
+--probability-threshold 0.5 \
+--output-masks-folder /path/to/output/mask_files
+
 # erase masked region
 fidder erase \
 --input-image example.mrc \
 --input-mask mask.mrc \
 --output-image erased.mrc
 
+# erase masked region for all MRC files in a folder
+# ideal for batch-processing all images of a TS in a single call
+fidder erase_batch \
+--input-images-folder /path/to/input/image_files \
+--input-masks-folder /path/to/input/mask_files  \
+--output-images-folder /path/to/output/erased_files
 ```
 
 ---
@@ -90,6 +103,7 @@ If trying to use an `10.X` CUDA runtime you may have to install older versions o
 Fidder will fetch the needed weights from Zenodo on its first run. To do so, [pooch](https://www.fatiando.org/pooch/latest/index.html) is used to download the weights to your computer. In Unix-like systems, this will [default](https://www.fatiando.org/pooch/latest/api/generated/pooch.os_cache.html#pooch-os-cache) to _~/.cache/fidder_ unless XDG_CACHE_HOME is set to a different location. 
 
 # Notes
+Batch prediction and erasing requires that the exact same file names exist in all folders.
 
 This package provides similar functionality to 
 [BoxNet](http://www.warpem.com/warp/?page_id=135) from Warp
