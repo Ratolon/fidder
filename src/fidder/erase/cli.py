@@ -10,6 +10,35 @@ from .erase import erase_masked_region as _erase_masked_region
 from ..utils import get_pixel_spacing_from_header
 from .._cli import cli, OPTION_PROMPT_KWARGS as PKWARGS
 
+@cli.command(name="erase_batch", no_args_is_help=True)
+def erase_masked_region_batch(
+    input_images_folder: Path = Option(
+        default=...,
+        help="Input folder containing image files in MRC format.",
+        **PKWARGS
+    ),
+    input_masks_folder: Path = Option(
+        default=...,
+        help="Input folder containing mask files in MRC format.",
+        **PKWARGS
+    ),
+    output_images_folder: Path = Option(
+        default=...,
+        help="Output folder for images in MRC format.",
+        **PKWARGS
+    ),
+):
+    """Erase masked regions in all TS images from a TS."""
+    input_images = sorted(input_images_folder.glob("*.mrc"))
+    input_masks = sorted(input_masks_folder.glob("*.mrc"))
+
+    for input_image, input_mask in zip(input_images, input_masks):
+        output_image = output_images_folder / input_image.name
+        erase_masked_region(
+            input_image=input_image,
+            input_mask=input_mask,
+            output_image=output_image,
+        )
 
 @cli.command(name="erase", no_args_is_help=True)
 def erase_masked_region(
