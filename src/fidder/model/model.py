@@ -23,6 +23,16 @@ class Fidder(pl.LightningModule):
 
     def __init__(self, batch_size: int = 4, learning_rate: float = 1e-05):
         super().__init__()
+
+        # Try to use Tensor Cores if available (RTX 20XX and newer)
+        if torch.cuda.is_available():
+            cc_level = torch.cuda.get_device_capability()
+            # Tensor Cores exist from CC 7.0 onwards
+            # They trade off a bit of precision for speed
+            # "medium" is much faster than "high" and has no big impact in CryoET data
+            if cc_level[0] >= 7:
+                torch.set_float32_matmul_precision("medium")
+        
         self.batch_size = batch_size
         self.learning_rate = learning_rate
         self.save_hyperparameters()
