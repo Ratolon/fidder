@@ -1,3 +1,4 @@
+from functools import lru_cache
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -7,9 +8,15 @@ from pytorch_lightning import Trainer
 
 from ..model import Fidder, get_latest_checkpoint
 from ..utils import calculate_resampling_factor, rescale_2d_bicubic, rescale_2d_nearest
-from ..constants import TRAINING_PIXEL_SIZE, PIXELS_PER_FIDUCIAL
+from ..constants import TRAINING_PIXEL_SIZE, PIXELS_PER_FIDUCIAL, MODEL_CACHE_SIZE
 from .probabilities_to_mask import probabilities_to_mask
 
+@lru_cache(maxsize = MODEL_CACHE_SIZE)  # Cache the last 2 loaded models
+def load_model(model_checkpoint_file: Path):
+    """Load model from checkpoint with caching."""
+    model = Fidder.load_from_checkpoint(str(model_checkpoint_file), map_location="cpu")
+    model.eval()
+    return model
 
 def predict_fiducial_mask(
     image: torch.Tensor,
@@ -47,7 +54,7 @@ def predict_fiducial_mask(
     # prepare model
     if model_checkpoint_file is None:
         model_checkpoint_file = get_latest_checkpoint()
-    model = Fidder.load_from_checkpoint(model_checkpoint_file, map_location="cpu")
+    model = load_model(Path(model_checkpoint_file))
     model.eval()
 
     # predict
