@@ -13,6 +13,37 @@ from ..utils import (
 )
 from .._cli import cli, OPTION_PROMPT_KWARGS as PKWARGS
 
+@cli.command(name="predict_batch", no_args_is_help=True)
+def predict_fiducial_mask_batch(
+    input_images_folder: Path = Option(
+        default=..., help="Input folder containing TS image files in MRC format.", **PKWARGS
+    ),
+    pixel_spacing: Optional[float] = Option(
+        default=None, help="Pixel spacing in ångströms."
+    ),
+    probability_threshold: float = Option(
+        default=0.5,
+        help="Threshold above which pixels are considered part of a fiducial.",
+    ),
+    output_mask_folder: Path = Option(
+        default=..., help="Output mask file in MRC format.", **PKWARGS
+    ),
+    output_probabilities_folder: Optional[Path] = Option(
+        default=None, help="Output probability image file in MRC format."
+    ),
+    model_checkpoint_file: Optional[Path] = Option(
+        default=None, help="File containing segmentation model checkpoint."
+    ),
+):
+    """Predict fiducial masks for a whole set of TS images as a batch (to reduce overhead) using a pretrained model."""
+    files = sorted(input_images_folder.glob("*.mrc"))
+    for file in files:
+        output_mask = output_mask_folder / file.name
+        output_probabilities = output_probabilities_folder / file.name
+        predict_fiducial_mask(Path(file), pixel_spacing, probability_threshold,
+                              output_mask=output_mask, output_probabilities=output_probabilities,
+                              model_checkpoint_file=model_checkpoint_file)
+    
 
 @cli.command(name="predict", no_args_is_help=True)
 def predict_fiducial_mask(
